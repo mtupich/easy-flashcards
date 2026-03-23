@@ -5,19 +5,31 @@ final class HomeViewModel: ObservableObject {
 
     @Published private(set) var decks: [Deck] = []
 
+    private let coreDataService: CoreDataService
+
     var totalDecks: Int { decks.count }
     var totalCards: Int { decks.reduce(0) { $0 + $1.cardCount } }
     var totalMastered: Int { decks.reduce(0) { $0 + $1.masteredCount } }
 
-    init() {
+    init(coreDataService: CoreDataService = .shared) {
+        self.coreDataService = coreDataService
         loadDecks()
     }
 
-    private func loadDecks() {
-        decks = [
-            Deck(name: "Inglês Básico", abbreviation: "ABC", cardCount: 15),
-            Deck(name: "Negócios", abbreviation: "BIZ", cardCount: 15),
-            Deck(name: "Viagem", abbreviation: "VIA", cardCount: 15)
-        ]
+    func loadDecks() {
+        let entities = coreDataService.fetchDecks()
+        decks = entities.map { Deck(entity: $0) }
+    }
+
+    func createDeck(name: String, abbreviation: String) {
+        coreDataService.createDeck(name: name, abbreviation: abbreviation)
+        loadDecks()
+    }
+
+    func deleteDeck(id: UUID) {
+        let entities = coreDataService.fetchDecks()
+        guard let entity = entities.first(where: { $0.id == id }) else { return }
+        coreDataService.deleteDeck(entity)
+        loadDecks()
     }
 }

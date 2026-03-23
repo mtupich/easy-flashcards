@@ -3,12 +3,24 @@ import SwiftUI
 struct DeckCardView: View {
 
     let deck: Deck
+    var onDelete: (() -> Void)?
 
     var body: some View {
         HStack(spacing: AppTheme.spacingMedium) {
             deckBadge
             deckInfo
             Spacer()
+
+            if let onDelete {
+                Button {
+                    onDelete()
+                } label: {
+                    Image(systemName: "trash")
+                        .font(.system(size: 16))
+                        .foregroundStyle(Color.red.opacity(0.7))
+                        .padding(8)
+                }
+            }
         }
         .padding(AppTheme.spacingMedium)
         .background(AppTheme.cardBackground)
@@ -25,7 +37,9 @@ struct DeckCardView: View {
                 .fill(AppTheme.accent)
                 .frame(width: 44, height: 36)
                 .overlay(
-                    Text(deck.abbreviation)
+                    Text(deck.abbreviation.isEmpty
+                         ? String(deck.name.prefix(2)).uppercased()
+                         : deck.abbreviation)
                         .font(.system(size: 11, weight: .bold))
                         .foregroundStyle(AppTheme.textPrimary)
                 )

@@ -8,6 +8,7 @@ enum AppState: Equatable {
 
 enum Route: Hashable {
     case deckDetail(deckId: UUID)
+    case pronunciation
 }
 
 final class AppCoordinator: ObservableObject {

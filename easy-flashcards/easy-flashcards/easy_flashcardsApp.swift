@@ -18,8 +18,10 @@ struct EasyFlashcardsApp: App {
                         HomeView()
                             .navigationDestination(for: Route.self) { route in
                                 switch route {
-                                case .deckDetail:
-                                    Text("Detalhe do Baralho")
+                                case .deckDetail(let deckId):
+                                    DeckDetailView(deckId: deckId)
+                                case .pronunciation:
+                                    PronunciationView()
                                 }
                             }
                     }
