@@ -59,7 +59,16 @@ final class SpeechRecognizer: ObservableObject {
     }
 
     func startRecording() throws {
-        stopRecording()
+        recognitionTask?.cancel()
+        recognitionTask = nil
+        if let engine = audioEngine, engine.isRunning {
+            engine.stop()
+            engine.inputNode.removeTap(onBus: 0)
+        }
+        recognitionRequest?.endAudio()
+        recognitionRequest = nil
+        audioEngine = nil
+
         recognizedText = ""
 
         let audioSession = AVAudioSession.sharedInstance()
@@ -89,7 +98,7 @@ final class SpeechRecognizer: ObservableObject {
                 }
             }
 
-            if error != nil {
+            if error != nil && self.isRecording {
                 DispatchQueue.main.async {
                     self.finishRecording()
                 }
@@ -107,10 +116,7 @@ final class SpeechRecognizer: ObservableObject {
     }
 
     func stopRecording() {
-        guard let engine = audioEngine, engine.isRunning else {
-            cleanupRecording()
-            return
-        }
+        guard isRecording, let engine = audioEngine, engine.isRunning else { return }
         engine.stop()
         engine.inputNode.removeTap(onBus: 0)
         recognitionRequest?.endAudio()

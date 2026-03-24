@@ -4,6 +4,7 @@ struct PronunciationView: View {
 
     @StateObject private var viewModel = PronunciationViewModel()
     @State private var showCreateDeck = false
+    @State private var showAddFlashcard = false
 
     var body: some View {
         Group {
@@ -19,15 +20,12 @@ struct PronunciationView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             if viewModel.isTraining {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        viewModel.goBackToSelection()
+                        showAddFlashcard = true
                     } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "chevron.left")
-                            Text("Baralhos")
-                        }
-                        .foregroundStyle(AppTheme.accent)
+                        Image(systemName: "plus")
+                            .foregroundStyle(AppTheme.accent)
                     }
                 }
             }
@@ -35,6 +33,11 @@ struct PronunciationView: View {
         .sheet(isPresented: $showCreateDeck) {
             CreateDeckSheet { name, abbreviation in
                 viewModel.createDeck(name: name, abbreviation: abbreviation)
+            }
+        }
+        .sheet(isPresented: $showAddFlashcard) {
+            AddFlashcardSheet { question, answer in
+                viewModel.addFlashcard(question: question, answer: answer)
             }
         }
     }
@@ -154,10 +157,23 @@ struct PronunciationView: View {
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundStyle(AppTheme.textPrimary)
 
-            Text("Adicione flashcards neste baralho antes de treinar")
+            Text("Adicione palavras para praticar a pronúncia")
                 .font(.system(size: 15))
                 .foregroundStyle(AppTheme.textSecondary)
                 .multilineTextAlignment(.center)
+
+            Button {
+                showAddFlashcard = true
+            } label: {
+                Text("Adicionar Palavra")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    .background(AppTheme.accentGradient)
+                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall))
+            }
+            .padding(.top, 8)
         }
         .padding(40)
     }

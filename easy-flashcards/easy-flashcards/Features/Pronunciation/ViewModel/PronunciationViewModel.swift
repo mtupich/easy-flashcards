@@ -19,6 +19,7 @@ final class PronunciationViewModel: ObservableObject {
     let speechRecognizer = SpeechRecognizer()
     private let coreDataService: CoreDataService
     private var cancellables = Set<AnyCancellable>()
+    private var isSessionActive = false
 
     var currentWord: String {
         guard !flashcards.isEmpty, currentIndex < flashcards.count else { return "" }
@@ -50,19 +51,20 @@ final class PronunciationViewModel: ObservableObject {
         speechRecognizer.requestAuthorization()
     }
 
-    func goBackToSelection() {
-        if speechRecognizer.isRecording {
-            speechRecognizer.stopRecording()
+    func createDeck(name: String, abbreviation: String) {
+        let deck = coreDataService.createDeck(name: name, abbreviation: abbreviation)
+        loadDecks()
+        if let id = deck.id {
+            selectDeck(id)
         }
-        selectedDeckId = nil
-        flashcards = []
-        currentIndex = 0
-        resetResult()
     }
 
-    func createDeck(name: String, abbreviation: String) {
-        coreDataService.createDeck(name: name, abbreviation: abbreviation)
-        loadDecks()
+    func addFlashcard(question: String, answer: String) {
+        guard let deckId = selectedDeckId,
+              let deckEntity = coreDataService.fetchDecks().first(where: { $0.id == deckId })
+        else { return }
+        coreDataService.createFlashcard(question: question, answer: answer, deck: deckEntity)
+        loadFlashcards()
     }
 
     private func loadFlashcards() {
@@ -75,20 +77,22 @@ final class PronunciationViewModel: ObservableObject {
 
     func toggleRecording() {
         if speechRecognizer.isRecording {
+            isSessionActive = true
             speechRecognizer.stopRecording()
         } else {
+            isSessionActive = false
             pronunciationResult = .none
             showResult = false
             do {
                 try speechRecognizer.startRecording()
+                isSessionActive = true
 
-                DispatchQueue.main.asyncAfter(deadline: .now() + 4) { [weak self] in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [weak self] in
                     guard let self = self, self.speechRecognizer.isRecording else { return }
                     self.speechRecognizer.stopRecording()
                 }
             } catch {
-                pronunciationResult = .incorrect
-                showResult = true
+                isSessionActive = false
             }
         }
     }
@@ -110,6 +114,7 @@ final class PronunciationViewModel: ObservableObject {
     func resetResult() {
         pronunciationResult = .none
         showResult = false
+        isSessionActive = false
         speechRecognizer.recognizedText = ""
     }
 
@@ -118,7 +123,11 @@ final class PronunciationViewModel: ObservableObject {
             .dropFirst()
             .filter { !$0 }
             .sink { [weak self] _ in
-                self?.evaluatePronunciation()
+                guard let self = self, self.isSessionActive else { return }
+                self.isSessionActive = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                    self?.evaluatePronunciation()
+                }
             }
             .store(in: &cancellables)
     }
