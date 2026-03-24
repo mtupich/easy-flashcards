@@ -1,3 +1,4 @@
+import FirebaseAuth
 import SwiftUI
 
 struct HomeView: View {
@@ -5,7 +6,10 @@ struct HomeView: View {
     @StateObject private var viewModel = HomeViewModel()
     @EnvironmentObject private var coordinator: AppCoordinator
     @State private var showCreateDeck = false
+    @State private var showProfile = false
     @State private var deckToDelete: Deck?
+
+    private var currentUser: User? { Auth.auth().currentUser }
 
     var body: some View {
         ScrollView {
@@ -23,6 +27,26 @@ struct HomeView: View {
             CreateDeckSheet { name, abbreviation in
                 viewModel.createDeck(name: name, abbreviation: abbreviation)
             }
+        }
+        .floatingSheet(isPresented: $showProfile) {
+            ProfileSheet(
+                onDismiss: { showProfile = false },
+                onLogout: {
+                    showProfile = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        coordinator.logout()
+                    }
+                },
+                onDeleteAccount: {
+                    showProfile = false
+                    Task {
+                        try? await Auth.auth().currentUser?.delete()
+                        await MainActor.run {
+                            coordinator.logout()
+                        }
+                    }
+                }
+            )
         }
         .alert("Tem certeza que deseja apagar esse deck?", isPresented: showDeleteAlert) {
             Button("Não", role: .cancel) {
@@ -50,15 +74,57 @@ struct HomeView: View {
     // MARK: - Header
 
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("Bem-vindo de volta")
-                .font(.system(size: 16, weight: .regular))
-                .foregroundStyle(AppTheme.textSecondary)
+        HStack {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Bem-vindo de volta")
+                    .font(.system(size: 16, weight: .regular))
+                    .foregroundStyle(AppTheme.textSecondary)
 
-            Text("Seus Flashcards")
-                .font(.system(size: 28, weight: .bold))
-                .foregroundStyle(AppTheme.textPrimary)
+                Text("Seus Flashcards")
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundStyle(AppTheme.textPrimary)
+            }
+
+            Spacer()
+
+            Button {
+                showProfile = true
+            } label: {
+                if let photoURL = currentUser?.photoURL {
+                    AsyncImage(url: photoURL) { image in
+                        image
+                            .resizable()
+                            .scaledToFill()
+                    } placeholder: {
+                        profilePlaceholder
+                    }
+                    .frame(width: 42, height: 42)
+                    .clipShape(Circle())
+                } else {
+                    profilePlaceholder
+                }
+            }
         }
+    }
+
+    private var profilePlaceholder: some View {
+        Circle()
+            .fill(AppTheme.accent)
+            .frame(width: 42, height: 42)
+            .overlay(
+                Text(profileInitials)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(.white)
+            )
+    }
+
+    private var profileInitials: String {
+        let name = currentUser?.displayName ?? ""
+        let parts = name.split(separator: " ")
+        let first = parts.first.map { String($0.prefix(1)) } ?? ""
+        let last = parts.count > 1 ? String(parts.last!.prefix(1)) : ""
+        let initials = (first + last).uppercased()
+        return initials.isEmpty ? "?" : initials
     }
 
     // MARK: - Stats

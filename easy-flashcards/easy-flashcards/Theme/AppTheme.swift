@@ -9,7 +9,7 @@ enum AppTheme {
     static let accent = Color(hex: "7C6CF7")
     static let accentDark = Color(hex: "6B5CE6")
     static let splashBackground = Color(red: 116 / 255, green: 103 / 255, blue: 233 / 255)
-    static let sheetBackground = Color(hex: "1E1E3F").opacity(0.70)
+    static let sheetBackground = Color(hex: "4D2141").opacity(0.85)
     static let textPrimary = Color.white
     static let textSecondary = Color(hex: "9090A7")
 

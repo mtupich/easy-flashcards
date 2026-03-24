@@ -1,0 +1,45 @@
+# --- Firebase ---
+GoogleService-Info.plist
+
+# --- Xcode ---
+build/
+DerivedData/
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
+xcuserdata/
+
+# --- macOS ---
+.DS_Store
+*.swp
+*~
+._*
+
+# --- Swift Package Manager ---
+.build/
+Packages/
+Package.resolved
+
+# --- CocoaPods (caso use no futuro) ---
+Pods/
+
+# --- Fastlane ---
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+fastlane/test_output/
+
+# --- Archives & IPAs ---
+*.ipa
+*.dSYM.zip
+*.dSYM
+*.xcarchive
+
+# --- Playgrounds ---
+timeline.xctimeline
+playground.xcworkspace
+
+# --- Secrets / Environment ---
+*.env
+.env.*
+Secrets/
