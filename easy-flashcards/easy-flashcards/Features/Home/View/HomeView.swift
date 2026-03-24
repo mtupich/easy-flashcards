@@ -23,9 +23,19 @@ struct HomeView: View {
             .padding(.top, AppTheme.spacingLarge)
         }
         .background(AppTheme.background.ignoresSafeArea())
+        .overlay {
+            if showCreateDeck {
+                Color.black.opacity(0.5)
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+            }
+        }
+        .animation(.easeInOut(duration: 0.3), value: showCreateDeck)
         .sheet(isPresented: $showCreateDeck) {
             CreateDeckSheet { name, abbreviation in
-                viewModel.createDeck(name: name, abbreviation: abbreviation)
+                if let deckId = viewModel.createDeck(name: name, abbreviation: abbreviation) {
+                    coordinator.push(.deckDetail(deckId: deckId))
+                }
             }
         }
         .floatingSheet(isPresented: $showProfile) {
@@ -74,19 +84,7 @@ struct HomeView: View {
     // MARK: - Header
 
     private var headerSection: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Bem-vindo de volta")
-                    .font(.system(size: 16, weight: .regular))
-                    .foregroundStyle(AppTheme.textSecondary)
-
-                Text("Seus Flashcards")
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundStyle(AppTheme.textPrimary)
-            }
-
-            Spacer()
-
+        HStack(spacing: 14) {
             Button {
                 showProfile = true
             } label: {
@@ -98,13 +96,32 @@ struct HomeView: View {
                     } placeholder: {
                         profilePlaceholder
                     }
-                    .frame(width: 42, height: 42)
+                    .frame(width: 46, height: 46)
                     .clipShape(Circle())
                 } else {
                     profilePlaceholder
                 }
             }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Bem-vindo de volta, \(displayName)")
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundStyle(AppTheme.textSecondary)
+                    .lineLimit(1)
+
+                Text("Seus Flashcards")
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundStyle(AppTheme.textPrimary)
+            }
+
+            Spacer()
         }
+    }
+
+    private var displayName: String {
+        let name = currentUser?.displayName ?? ""
+        let firstName = name.split(separator: " ").first.map(String.init) ?? "Usuário"
+        return firstName
     }
 
     private var profilePlaceholder: some View {

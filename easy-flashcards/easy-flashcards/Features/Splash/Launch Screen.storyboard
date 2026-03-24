@@ -16,27 +16,29 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="flor" translatesAutoresizingMaskIntoConstraints="NO" id="MQW-QR-H9g">
-                                <rect key="frame" x="112" y="387" width="168" height="79"/>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="card-two-svgrepo-com" translatesAutoresizingMaskIntoConstraints="NO" id="t4X-Xn-4U8">
+                                <rect key="frame" x="134.66666666666666" y="407" width="123.99999999999997" height="88"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="88" id="OeN-f9-kG3"/>
+                                    <constraint firstAttribute="width" constant="124" id="gyg-cF-Ml2"/>
+                                </constraints>
                             </imageView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="easy flashcards" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3AQ-ga-Miu">
-                                <rect key="frame" x="116" y="486" width="161" height="21"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="textColor"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="EASY-FLASHCARDS" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Dhf-WD-IEW">
+                                <rect key="frame" x="100" y="503.00000000000006" width="193" height="20.666666666666686"/>
+                                <fontDescription key="fontDescription" name="CourierNewPS-BoldMT" family="Courier New" pointSize="18"/>
+                                <color key="textColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
                         <color key="backgroundColor" systemColor="systemIndigoColor"/>
                         <constraints>
-                            <constraint firstItem="3AQ-ga-Miu" firstAttribute="leading" secondItem="Bcu-3y-fUS" secondAttribute="leading" constant="116" id="DyY-Q6-xMF"/>
-                            <constraint firstItem="Bcu-3y-fUS" firstAttribute="trailing" secondItem="3AQ-ga-Miu" secondAttribute="trailing" constant="116" id="E1F-oI-PN0"/>
-                            <constraint firstItem="Bcu-3y-fUS" firstAttribute="bottom" secondItem="3AQ-ga-Miu" secondAttribute="bottom" constant="277" id="IsC-iw-S3a"/>
-                            <constraint firstItem="3AQ-ga-Miu" firstAttribute="top" secondItem="MQW-QR-H9g" secondAttribute="bottom" constant="20" id="P3k-s7-x9z"/>
-                            <constraint firstItem="Bcu-3y-fUS" firstAttribute="bottom" secondItem="MQW-QR-H9g" secondAttribute="bottom" constant="318" id="PSu-92-afp"/>
-                            <constraint firstItem="Bcu-3y-fUS" firstAttribute="trailing" secondItem="MQW-QR-H9g" secondAttribute="trailing" constant="113" id="V3F-hx-Z5r"/>
-                            <constraint firstItem="MQW-QR-H9g" firstAttribute="top" secondItem="Bcu-3y-fUS" secondAttribute="top" constant="269" id="qsy-y1-bMh"/>
-                            <constraint firstItem="MQW-QR-H9g" firstAttribute="leading" secondItem="Bcu-3y-fUS" secondAttribute="leading" constant="112" id="vYl-Ms-RWm"/>
+                            <constraint firstItem="t4X-Xn-4U8" firstAttribute="centerX" secondItem="Bcu-3y-fUS" secondAttribute="centerX" id="6K0-5D-s56"/>
+                            <constraint firstItem="Dhf-WD-IEW" firstAttribute="leading" secondItem="Bcu-3y-fUS" secondAttribute="leading" constant="100" id="Zfm-gu-no8"/>
+                            <constraint firstItem="t4X-Xn-4U8" firstAttribute="centerY" secondItem="Bcu-3y-fUS" secondAttribute="centerY" id="heG-Gp-gk2"/>
+                            <constraint firstItem="Bcu-3y-fUS" firstAttribute="trailing" secondItem="Dhf-WD-IEW" secondAttribute="trailing" constant="100" id="omu-H0-SKX"/>
+                            <constraint firstItem="Dhf-WD-IEW" firstAttribute="top" secondItem="t4X-Xn-4U8" secondAttribute="top" constant="96" id="ute-gK-5yC"/>
+                            <constraint firstItem="Dhf-WD-IEW" firstAttribute="centerX" secondItem="Bcu-3y-fUS" secondAttribute="centerX" id="wtB-jh-tNB"/>
                         </constraints>
                     </view>
                 </viewController>
@@ -46,9 +48,9 @@
         </scene>
     </scenes>
     <resources>
-        <image name="flor" width="512" height="512"/>
+        <image name="card-two-svgrepo-com" width="800" height="800"/>
         <systemColor name="systemIndigoColor">
-            <color red="0.38039215686274508" green="0.33333333333333331" blue="0.96078431372549022" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.34509803919999998" green="0.33725490200000002" blue="0.83921568629999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>

@@ -21,25 +21,43 @@ struct CreateDeckSheet: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Nome do Baralho")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(AppTheme.textSecondary)
+                        .foregroundStyle(AppTheme.textDark)
 
-                    TextField("Ex: Inglês Básico", text: $name)
-                        .darkFieldStyle()
+                    TextField(
+                        "",
+                        text: $name,
+                        prompt: Text("Ex: Inglês Básico").foregroundStyle(Color(.lightGray))
+                    )
+                        .textFieldStyle(.plain)
+                        .padding()
+                        .background(Color.white)
+                        .foregroundStyle(AppTheme.textDark)
+                        .tint(AppTheme.accent)
+                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall))
                 }
 
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Text("Abreviação")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(AppTheme.textSecondary)
+                            .foregroundStyle(AppTheme.textDark)
 
                         Text("(opcional)")
                             .font(.system(size: 12, weight: .regular))
-                            .foregroundStyle(AppTheme.textSecondary.opacity(0.6))
+                            .foregroundStyle(AppTheme.textDark.opacity(0.4))
                     }
 
-                    TextField("Ex: ABC", text: $abbreviation)
-                        .darkFieldStyle()
+                    TextField(
+                        "",
+                        text: $abbreviation,
+                        prompt: Text("Ex: ABC").foregroundStyle(Color(.lightGray))
+                    )
+                        .textFieldStyle(.plain)
+                        .padding()
+                        .background(Color.white)
+                        .foregroundStyle(AppTheme.textDark)
+                        .tint(AppTheme.accent)
+                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall))
                         .onChange(of: abbreviation) { _, newValue in
                             abbreviation = String(newValue.prefix(4)).uppercased()
                         }
@@ -53,7 +71,7 @@ struct CreateDeckSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancelar") { dismiss() }
-                        .foregroundStyle(AppTheme.textSecondary)
+                        .foregroundStyle(.black)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Criar") {
@@ -61,11 +79,15 @@ struct CreateDeckSheet: View {
                         dismiss()
                     }
                     .foregroundStyle(AppTheme.accent)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
                     .disabled(name.isEmpty)
                 }
             }
             .toolbarBackground(Color.clear, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarColorScheme(.light, for: .navigationBar)
         }
         .presentationDetents([.medium])
         .presentationBackground(AppTheme.sheetBackground)

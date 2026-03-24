@@ -21,9 +21,11 @@ final class HomeViewModel: ObservableObject {
         decks = entities.map { Deck(entity: $0) }
     }
 
-    func createDeck(name: String, abbreviation: String) {
-        coreDataService.createDeck(name: name, abbreviation: abbreviation)
+    @discardableResult
+    func createDeck(name: String, abbreviation: String) -> UUID? {
+        let entity = coreDataService.createDeck(name: name, abbreviation: abbreviation)
         loadDecks()
+        return entity.id
     }
 
     func deleteDeck(id: UUID) {

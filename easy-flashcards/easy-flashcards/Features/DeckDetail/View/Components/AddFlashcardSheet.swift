@@ -14,19 +14,37 @@ struct AddFlashcardSheet: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Pergunta (frente)")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(AppTheme.textSecondary)
+                        .foregroundStyle(AppTheme.textDark)
 
-                    TextField("Ex: Light", text: $question)
-                        .darkFieldStyle()
+                    TextField(
+                        "",
+                        text: $question,
+                        prompt: Text("Ex: Light").foregroundStyle(Color(.lightGray))
+                    )
+                        .textFieldStyle(.plain)
+                        .padding()
+                        .background(Color.white)
+                        .foregroundStyle(AppTheme.textDark)
+                        .tint(AppTheme.accent)
+                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall))
                 }
 
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Resposta (verso)")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(AppTheme.textSecondary)
+                        .foregroundStyle(AppTheme.textDark)
 
-                    TextField("Ex: Luz", text: $answer)
-                        .darkFieldStyle()
+                    TextField(
+                        "",
+                        text: $answer,
+                        prompt: Text("Ex: Luz").foregroundStyle(Color(.lightGray))
+                    )
+                        .textFieldStyle(.plain)
+                        .padding()
+                        .background(Color.white)
+                        .foregroundStyle(AppTheme.textDark)
+                        .tint(AppTheme.accent)
+                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall))
                 }
 
                 Spacer()
@@ -37,7 +55,7 @@ struct AddFlashcardSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancelar") { dismiss() }
-                        .foregroundStyle(AppTheme.textSecondary)
+                        .foregroundStyle(.gray)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Adicionar") {
@@ -50,6 +68,7 @@ struct AddFlashcardSheet: View {
             }
             .toolbarBackground(Color.clear, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarColorScheme(.light, for: .navigationBar)
         }
         .presentationDetents([.medium])
         .presentationBackground(AppTheme.sheetBackground)

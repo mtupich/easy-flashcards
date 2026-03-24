@@ -9,9 +9,10 @@ enum AppTheme {
     static let accent = Color(hex: "7C6CF7")
     static let accentDark = Color(hex: "6B5CE6")
     static let splashBackground = Color(red: 116 / 255, green: 103 / 255, blue: 233 / 255)
-    static let sheetBackground = Color(hex: "4D2141").opacity(0.85)
+    static let sheetBackground = Color(.lightGray)
     static let textPrimary = Color.white
     static let textSecondary = Color(hex: "9090A7")
+    static let textDark = Color.black
 
     // MARK: - Corner Radius
 
@@ -63,22 +64,3 @@ extension Color {
     }
 }
 
-// MARK: - View Modifiers
-
-struct DarkFieldModifier: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .textFieldStyle(.plain)
-            .padding()
-            .background(AppTheme.cardBackground)
-            .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall))
-            .foregroundStyle(AppTheme.textPrimary)
-            .tint(AppTheme.accent)
-    }
-}
-
-extension View {
-    func darkFieldStyle() -> some View {
-        modifier(DarkFieldModifier())
-    }
-}
