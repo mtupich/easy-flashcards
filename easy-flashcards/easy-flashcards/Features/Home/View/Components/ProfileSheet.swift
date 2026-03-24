@@ -1,25 +1,18 @@
-import FirebaseAuth
 import SwiftUI
 
 struct ProfileSheet: View {
 
+    let userInfo: UserInfo?
     let onDismiss: () -> Void
     let onLogout: () -> Void
     let onDeleteAccount: () -> Void
 
     @State private var showDeleteConfirm = false
 
-    private var currentUser: User? { Auth.auth().currentUser }
-    private var displayName: String { currentUser?.displayName ?? "Usuário" }
-    private var email: String { currentUser?.email ?? "" }
-    private var photoURL: URL? { currentUser?.photoURL }
-
-    private var initials: String {
-        let parts = displayName.split(separator: " ")
-        let first = parts.first.map { String($0.prefix(1)) } ?? ""
-        let last = parts.count > 1 ? String(parts.last!.prefix(1)) : ""
-        return (first + last).uppercased()
-    }
+    private var displayName: String { userInfo?.displayName ?? "Usuário" }
+    private var email: String { userInfo?.email ?? "" }
+    private var photoURL: URL? { userInfo?.photoURL }
+    private var initials: String { userInfo?.initials ?? "?" }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -100,7 +93,7 @@ struct ProfileSheet: View {
             .fill(AppTheme.accent)
             .frame(width: 52, height: 52)
             .overlay(
-                Text(initials.isEmpty ? "?" : initials)
+                Text(initials)
                     .font(.system(size: 18, weight: .bold))
                     .foregroundStyle(.white)
             )

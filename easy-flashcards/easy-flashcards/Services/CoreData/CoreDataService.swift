@@ -1,6 +1,18 @@
 import CoreData
 
-final class CoreDataService {
+protocol CoreDataServiceProtocol {
+    func fetchDecks() -> [DeckEntity]
+    func createDeck(name: String, abbreviation: String) -> DeckEntity
+    func deleteDeck(_ deck: DeckEntity)
+    func fetchFlashcards(for deck: DeckEntity) -> [FlashcardEntity]
+    func fetchAllFlashcards() -> [FlashcardEntity]
+    func createFlashcard(question: String, answer: String, deck: DeckEntity) -> FlashcardEntity
+    func toggleMastered(_ card: FlashcardEntity)
+    func deleteFlashcard(_ card: FlashcardEntity)
+    func save()
+}
+
+final class CoreDataService: CoreDataServiceProtocol {
 
     static let shared = CoreDataService()
 

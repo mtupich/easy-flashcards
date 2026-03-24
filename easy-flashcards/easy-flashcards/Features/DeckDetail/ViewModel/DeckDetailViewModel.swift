@@ -7,7 +7,7 @@ final class DeckDetailViewModel: ObservableObject {
     @Published var currentIndex = 0
 
     let deckId: UUID
-    private let coreDataService: CoreDataService
+    private let coreDataService: CoreDataServiceProtocol
 
     var deckName: String {
         deckEntity?.name ?? ""
@@ -19,7 +19,7 @@ final class DeckDetailViewModel: ObservableObject {
         coreDataService.fetchDecks().first { $0.id == deckId }
     }
 
-    init(deckId: UUID, coreDataService: CoreDataService = .shared) {
+    init(deckId: UUID, coreDataService: CoreDataServiceProtocol = CoreDataService.shared) {
         self.deckId = deckId
         self.coreDataService = coreDataService
         loadFlashcards()

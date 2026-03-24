@@ -16,8 +16,8 @@ final class PronunciationViewModel: ObservableObject {
     @Published var pronunciationResult: PronunciationResult = .none
     @Published var showResult = false
 
-    let speechRecognizer = SpeechRecognizer()
-    private let coreDataService: CoreDataService
+    let speechRecognizer: SpeechRecognizer
+    private let coreDataService: CoreDataServiceProtocol
     private var cancellables = Set<AnyCancellable>()
     private var isSessionActive = false
 
@@ -32,8 +32,12 @@ final class PronunciationViewModel: ObservableObject {
         decks.first { $0.id == selectedDeckId }?.name ?? ""
     }
 
-    init(coreDataService: CoreDataService = .shared) {
+    init(
+        coreDataService: CoreDataServiceProtocol = CoreDataService.shared,
+        speechRecognizer: SpeechRecognizer = SpeechRecognizer()
+    ) {
         self.coreDataService = coreDataService
+        self.speechRecognizer = speechRecognizer
         loadDecks()
         observeRecognition()
     }

@@ -5,13 +5,13 @@ final class HomeViewModel: ObservableObject {
 
     @Published private(set) var decks: [Deck] = []
 
-    private let coreDataService: CoreDataService
+    private let coreDataService: CoreDataServiceProtocol
 
     var totalDecks: Int { decks.count }
     var totalCards: Int { decks.reduce(0) { $0 + $1.cardCount } }
     var totalMastered: Int { decks.reduce(0) { $0 + $1.masteredCount } }
 
-    init(coreDataService: CoreDataService = .shared) {
+    init(coreDataService: CoreDataServiceProtocol = CoreDataService.shared) {
         self.coreDataService = coreDataService
         loadDecks()
     }

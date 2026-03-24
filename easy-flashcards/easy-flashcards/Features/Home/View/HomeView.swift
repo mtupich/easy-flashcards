@@ -1,4 +1,3 @@
-import FirebaseAuth
 import SwiftUI
 
 struct HomeView: View {
@@ -8,8 +7,6 @@ struct HomeView: View {
     @State private var showCreateDeck = false
     @State private var showProfile = false
     @State private var deckToDelete: Deck?
-
-    private var currentUser: User? { Auth.auth().currentUser }
 
     var body: some View {
         ScrollView {
@@ -40,6 +37,7 @@ struct HomeView: View {
         }
         .floatingSheet(isPresented: $showProfile) {
             ProfileSheet(
+                userInfo: coordinator.currentUserInfo,
                 onDismiss: { showProfile = false },
                 onLogout: {
                     showProfile = false
@@ -50,10 +48,7 @@ struct HomeView: View {
                 onDeleteAccount: {
                     showProfile = false
                     Task {
-                        try? await Auth.auth().currentUser?.delete()
-                        await MainActor.run {
-                            coordinator.logout()
-                        }
+                        await coordinator.deleteAccount()
                     }
                 }
             )
@@ -88,7 +83,7 @@ struct HomeView: View {
             Button {
                 showProfile = true
             } label: {
-                if let photoURL = currentUser?.photoURL {
+                if let photoURL = coordinator.currentUserInfo?.photoURL {
                     AsyncImage(url: photoURL) { image in
                         image
                             .resizable()
@@ -104,7 +99,7 @@ struct HomeView: View {
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Bem-vindo de volta, \(displayName)")
+                Text("Bem-vindo de volta, \(coordinator.currentUserInfo?.firstName ?? "Usuário")")
                     .font(.system(size: 12, weight: .regular))
                     .foregroundStyle(AppTheme.textSecondary)
                     .lineLimit(1)
@@ -118,30 +113,15 @@ struct HomeView: View {
         }
     }
 
-    private var displayName: String {
-        let name = currentUser?.displayName ?? ""
-        let firstName = name.split(separator: " ").first.map(String.init) ?? "Usuário"
-        return firstName
-    }
-
     private var profilePlaceholder: some View {
         Circle()
             .fill(AppTheme.accent)
             .frame(width: 42, height: 42)
             .overlay(
-                Text(profileInitials)
+                Text(coordinator.currentUserInfo?.initials ?? "?")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(.white)
             )
-    }
-
-    private var profileInitials: String {
-        let name = currentUser?.displayName ?? ""
-        let parts = name.split(separator: " ")
-        let first = parts.first.map { String($0.prefix(1)) } ?? ""
-        let last = parts.count > 1 ? String(parts.last!.prefix(1)) : ""
-        let initials = (first + last).uppercased()
-        return initials.isEmpty ? "?" : initials
     }
 
     // MARK: - Stats

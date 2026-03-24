@@ -1,5 +1,4 @@
 import Combine
-import FirebaseAuth
 import SwiftUI
 
 enum AppState: Equatable {
@@ -17,8 +16,15 @@ final class AppCoordinator: ObservableObject {
     @Published var appState: AppState = .login
     @Published var homePath = NavigationPath()
 
-    init() {
-        if Auth.auth().currentUser != nil {
+    private let authService: AuthServiceProtocol
+
+    var currentUserInfo: UserInfo? {
+        authService.currentUserInfo
+    }
+
+    init(authService: AuthServiceProtocol = AuthService()) {
+        self.authService = authService
+        if authService.isAuthenticated {
             appState = .home
         }
     }
@@ -28,9 +34,17 @@ final class AppCoordinator: ObservableObject {
     }
 
     func logout() {
-        try? Auth.auth().signOut()
+        try? authService.signOut()
         homePath = NavigationPath()
         appState = .login
+    }
+
+    func deleteAccount() async {
+        try? await authService.deleteAccount()
+        await MainActor.run {
+            homePath = NavigationPath()
+            appState = .login
+        }
     }
 
     func push(_ route: Route) {

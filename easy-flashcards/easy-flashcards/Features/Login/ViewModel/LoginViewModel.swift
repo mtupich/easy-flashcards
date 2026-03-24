@@ -8,7 +8,11 @@ final class LoginViewModel: ObservableObject {
     @Published var showError = false
     @Published var isLoading = false
 
-    let authService = AuthService()
+    private let authService: AuthServiceProtocol
+
+    init(authService: AuthServiceProtocol = AuthService()) {
+        self.authService = authService
+    }
 
     func signInWithGoogle(onSuccess: @escaping () -> Void) {
         isLoading = true
