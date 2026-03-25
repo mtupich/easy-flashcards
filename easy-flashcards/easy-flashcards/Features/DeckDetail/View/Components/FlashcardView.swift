@@ -40,9 +40,11 @@ struct FlashcardView: View {
             Spacer()
 
             Text(flashcard.question)
-                .font(.system(size: 24, weight: .bold))
+                .font(.system(size: fontSize(for: flashcard.question), weight: .bold))
                 .foregroundStyle(AppTheme.textPrimary)
                 .multilineTextAlignment(.center)
+                .lineLimit(6)
+                .minimumScaleFactor(0.7)
 
             Spacer()
 
@@ -68,9 +70,11 @@ struct FlashcardView: View {
             Spacer()
 
             Text(flashcard.answer)
-                .font(.system(size: 24, weight: .bold))
+                .font(.system(size: fontSize(for: flashcard.answer), weight: .bold))
                 .foregroundStyle(AppTheme.textPrimary)
                 .multilineTextAlignment(.center)
+                .lineLimit(6)
+                .minimumScaleFactor(0.7)
 
             Spacer()
 
@@ -90,5 +94,16 @@ struct FlashcardView: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: Color.green.opacity(0.1), radius: 12, y: 6)
+    }
+
+    private func fontSize(for text: String) -> CGFloat {
+        switch text.count {
+        case 0...35:
+            return 24
+        case 36...70:
+            return 20
+        default:
+            return 17
+        }
     }
 }

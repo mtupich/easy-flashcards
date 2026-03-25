@@ -139,7 +139,9 @@ struct PronunciationView: View {
 
     private var trainingContent: some View {
         Group {
-            if !viewModel.hasFlashcards {
+            if viewModel.isCompleted {
+                completionState
+            } else if !viewModel.hasFlashcards {
                 emptyDeckState
             } else {
                 pronunciationTraining
@@ -184,6 +186,7 @@ struct PronunciationView: View {
         VStack(spacing: AppTheme.spacingLarge) {
             Spacer()
 
+            trainingProgress
             pronunciationCard
 
             if viewModel.showResult {
@@ -200,43 +203,42 @@ struct PronunciationView: View {
 
             microphoneButton
 
-            cardNavigation
-
             Spacer()
         }
         .padding(.horizontal, 20)
     }
 
-    private var pronunciationCard: some View {
-        VStack(spacing: 20) {
-            Text("PRONUNCIE")
-                .font(.system(size: 12, weight: .bold))
-                .foregroundStyle(AppTheme.accent)
-                .tracking(2)
-
-            Text(viewModel.currentWord)
-                .font(.system(size: 36, weight: .bold))
-                .foregroundStyle(wordColor)
-                .multilineTextAlignment(.center)
-                .animation(.easeInOut(duration: 0.3), value: viewModel.pronunciationResult)
-
-            if viewModel.showResult {
-                Text(
-                    viewModel.speechRecognizer.recognizedText.isEmpty
-                        ? "Não detectado"
-                        : "\"\(viewModel.speechRecognizer.recognizedText)\""
-                )
-                .font(.system(size: 14))
+    private var trainingProgress: some View {
+        VStack(spacing: 6) {
+            Text(viewModel.progressText)
+                .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(AppTheme.textSecondary)
+
+            if !viewModel.retryCards.isEmpty {
+                Text("Erros pendentes: \(viewModel.retryCards.count)")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(.orange.opacity(0.95))
             }
         }
-        .padding(30)
-        .frame(maxWidth: .infinity)
-        .frame(height: 240)
-        .background(cardBackgroundColor)
-        .clipShape(RoundedRectangle(cornerRadius: 20))
-        .shadow(color: shadowColor, radius: 12, y: 6)
-        .animation(.easeInOut(duration: 0.3), value: viewModel.pronunciationResult)
+    }
+
+    private var pronunciationCard: some View {
+        ZStack {
+            ForEach(Array(visibleStackCards.enumerated().reversed()), id: \.element.id) { index, card in
+                cardView(for: card, isCurrent: index == 0)
+                    .scaleEffect(index == 0 ? 1 : 0.95 - CGFloat(index) * 0.03)
+                    .offset(y: CGFloat(index) * 14)
+                    .opacity(index == 0 ? 1 : 0.82)
+            }
+        }
+        .frame(height: 270)
+        .animation(.spring(response: 0.35, dampingFraction: 0.82), value: viewModel.currentIndex)
+    }
+
+    private var visibleStackCards: [Flashcard] {
+        // Durante o feedback (verde/vermelho), exibimos só o card atual
+        // para evitar o "vazamento" visual do próximo card no fundo.
+        viewModel.showResult ? Array(viewModel.stackCards.prefix(1)) : viewModel.stackCards
     }
 
     private var wordColor: Color {
@@ -250,16 +252,16 @@ struct PronunciationView: View {
     private var cardBackgroundColor: Color {
         switch viewModel.pronunciationResult {
         case .none: return AppTheme.cardBackground
-        case .correct: return Color.green.opacity(0.1)
-        case .incorrect: return Color.red.opacity(0.1)
+        case .correct: return Color(hex: "183E24")
+        case .incorrect: return Color(hex: "4A1F26")
         }
     }
 
     private var shadowColor: Color {
         switch viewModel.pronunciationResult {
         case .none: return AppTheme.accent.opacity(0.15)
-        case .correct: return Color.green.opacity(0.2)
-        case .incorrect: return Color.red.opacity(0.2)
+        case .correct: return Color.green.opacity(0.35)
+        case .incorrect: return Color.red.opacity(0.35)
         }
     }
 
@@ -282,78 +284,144 @@ struct PronunciationView: View {
         .animation(.spring(response: 0.4), value: viewModel.showResult)
     }
 
+    private var completionState: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "checkmark.seal.fill")
+                .font(.system(size: 52))
+                .foregroundStyle(.green)
+
+            Text("Treino finalizado")
+                .font(.system(size: 24, weight: .bold))
+                .foregroundStyle(AppTheme.textPrimary)
+
+            Text(viewModel.completionMessage)
+                .font(.system(size: 15, weight: .medium))
+                .foregroundStyle(AppTheme.textSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
+
+            Button {
+                viewModel.restartTraining()
+            } label: {
+                Text("Treinar novamente")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    .background(AppTheme.accentGradient)
+                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall))
+            }
+            .padding(.top, 8)
+        }
+        .padding(32)
+    }
+
     // MARK: - Microphone
 
     private var microphoneButton: some View {
-        Button {
-            viewModel.toggleRecording()
-        } label: {
-            ZStack {
-                Circle()
-                    .fill(viewModel.speechRecognizer.isRecording ? Color.red : AppTheme.accent)
-                    .frame(width: 72, height: 72)
-                    .shadow(
-                        color: (viewModel.speechRecognizer.isRecording
-                                ? Color.red : AppTheme.accent).opacity(0.4),
-                        radius: 12
-                    )
-
-                if viewModel.speechRecognizer.isRecording {
+        VStack(spacing: 10) {
+            Button {
+                viewModel.toggleHandsFreeMode()
+            } label: {
+                ZStack {
                     Circle()
-                        .stroke(Color.red.opacity(0.3), lineWidth: 3)
-                        .frame(width: 88, height: 88)
-                        .scaleEffect(1.2)
-                        .opacity(0)
-                        .animation(
-                            .easeOut(duration: 1).repeatForever(autoreverses: false),
-                            value: viewModel.speechRecognizer.isRecording
+                        .fill(microphoneColor)
+                        .frame(width: 72, height: 72)
+                        .shadow(
+                            color: microphoneColor.opacity(0.4),
+                            radius: 12
                         )
-                }
 
-                Image(systemName: viewModel.speechRecognizer.isRecording ? "stop.fill" : "mic.fill")
-                    .font(.system(size: 28))
-                    .foregroundStyle(.white)
+                    if viewModel.speechRecognizer.isRecording {
+                        Circle()
+                            .stroke(Color.red.opacity(0.3), lineWidth: 3)
+                            .frame(width: 88, height: 88)
+                            .scaleEffect(1.2)
+                            .opacity(0)
+                            .animation(
+                                .easeOut(duration: 1).repeatForever(autoreverses: false),
+                                value: viewModel.speechRecognizer.isRecording
+                            )
+                    }
+
+                    Image(systemName: microphoneIcon)
+                        .font(.system(size: 28))
+                        .foregroundStyle(.white)
+                }
             }
+            .disabled(viewModel.isProcessing)
+            .padding(.top, 8)
+
+            Text(microphoneHint)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(AppTheme.textSecondary)
         }
     }
 
-    // MARK: - Navigation
+    private var microphoneColor: Color {
+        if viewModel.isProcessing { return AppTheme.textSecondary.opacity(0.45) }
+        if viewModel.speechRecognizer.isRecording { return .red }
+        if viewModel.isHandsFreeRunning { return .orange }
+        return AppTheme.accent
+    }
 
-    private var cardNavigation: some View {
-        HStack(spacing: 30) {
-            Button {
-                withAnimation(.spring(response: 0.4)) {
-                    viewModel.previousCard()
-                }
-            } label: {
-                Image(systemName: "arrow.left.circle.fill")
-                    .font(.system(size: 36))
-                    .foregroundStyle(
-                        viewModel.currentIndex > 0
-                            ? AppTheme.accent
-                            : AppTheme.textSecondary.opacity(0.3)
-                    )
-            }
-            .disabled(viewModel.currentIndex == 0)
+    private var microphoneIcon: String {
+        if viewModel.isProcessing { return "ellipsis" }
+        return viewModel.speechRecognizer.isRecording ? "stop.fill" : "mic.fill"
+    }
 
-            Text("\(viewModel.currentIndex + 1) / \(viewModel.flashcards.count)")
-                .font(.system(size: 16, weight: .medium))
+    private var microphoneHint: String {
+        if viewModel.isProcessing { return "Processando..." }
+        if viewModel.speechRecognizer.isRecording { return "Ouvindo..." }
+        if viewModel.isHandsFreeRunning { return "Aguardando próxima palavra..." }
+        return "Toque uma vez para iniciar o treino contínuo"
+    }
+
+    private func cardView(for card: Flashcard, isCurrent: Bool) -> some View {
+        VStack(spacing: 20) {
+            Text("PRONUNCIE")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(AppTheme.accent)
+                .tracking(2)
+
+            Text(card.question)
+                .font(.system(size: 34, weight: .bold))
+                .foregroundStyle(isCurrent ? wordColor : AppTheme.textPrimary.opacity(0.85))
+                .multilineTextAlignment(.center)
+                .lineLimit(3)
+
+            if isCurrent && viewModel.showResult {
+                Text(
+                    viewModel.speechRecognizer.recognizedText.isEmpty
+                        ? "Não detectado"
+                        : "\"\(viewModel.speechRecognizer.recognizedText)\""
+                )
+                .font(.system(size: 14))
                 .foregroundStyle(AppTheme.textSecondary)
-
-            Button {
-                withAnimation(.spring(response: 0.4)) {
-                    viewModel.nextCard()
-                }
-            } label: {
-                Image(systemName: "arrow.right.circle.fill")
-                    .font(.system(size: 36))
-                    .foregroundStyle(
-                        viewModel.currentIndex < viewModel.flashcards.count - 1
-                            ? AppTheme.accent
-                            : AppTheme.textSecondary.opacity(0.3)
-                    )
             }
-            .disabled(viewModel.currentIndex >= viewModel.flashcards.count - 1)
+        }
+        .padding(30)
+        .frame(maxWidth: .infinity)
+        .frame(height: 240)
+        .background(isCurrent ? cardBackgroundColor : AppTheme.cardBackground.opacity(0.95))
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(cardBorderColor(isCurrent: isCurrent), lineWidth: 2)
+        )
+        .shadow(color: isCurrent ? shadowColor : .clear, radius: 12, y: 6)
+        .animation(.easeInOut(duration: 0.2), value: viewModel.pronunciationResult)
+    }
+
+    private func cardBorderColor(isCurrent: Bool) -> Color {
+        guard isCurrent else { return AppTheme.textSecondary.opacity(0.35) }
+        switch viewModel.pronunciationResult {
+        case .none:
+            return AppTheme.accent.opacity(0.5)
+        case .correct:
+            return Color.green.opacity(0.95)
+        case .incorrect:
+            return Color.red.opacity(0.95)
         }
     }
 }

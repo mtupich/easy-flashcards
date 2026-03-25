@@ -2,6 +2,8 @@ import SwiftUI
 
 struct AddFlashcardSheet: View {
 
+    private let maxCharacters = 120
+
     @Environment(\.dismiss) private var dismiss
     @State private var question = ""
     @State private var answer = ""
@@ -12,9 +14,15 @@ struct AddFlashcardSheet: View {
         NavigationStack {
             VStack(spacing: AppTheme.spacingLarge) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Pergunta (frente)")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(AppTheme.textDark)
+                    HStack {
+                        Text("Pergunta (frente)")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(AppTheme.textDark)
+                        Spacer()
+                        Text("\(question.count)/\(maxCharacters)")
+                            .font(.system(size: 12, weight: .regular))
+                            .foregroundStyle(AppTheme.textDark.opacity(0.45))
+                    }
 
                     TextField(
                         "",
@@ -27,12 +35,21 @@ struct AddFlashcardSheet: View {
                         .foregroundStyle(AppTheme.textDark)
                         .tint(AppTheme.accent)
                         .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall))
+                        .onChange(of: question) { _, newValue in
+                            question = String(newValue.prefix(maxCharacters))
+                        }
                 }
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Resposta (verso)")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(AppTheme.textDark)
+                    HStack {
+                        Text("Resposta (verso)")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(AppTheme.textDark)
+                        Spacer()
+                        Text("\(answer.count)/\(maxCharacters)")
+                            .font(.system(size: 12, weight: .regular))
+                            .foregroundStyle(AppTheme.textDark.opacity(0.45))
+                    }
 
                     TextField(
                         "",
@@ -45,6 +62,9 @@ struct AddFlashcardSheet: View {
                         .foregroundStyle(AppTheme.textDark)
                         .tint(AppTheme.accent)
                         .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall))
+                        .onChange(of: answer) { _, newValue in
+                            answer = String(newValue.prefix(maxCharacters))
+                        }
                 }
 
                 Spacer()

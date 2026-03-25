@@ -3,7 +3,6 @@ import SwiftUI
 struct DeckDetailView: View {
 
     @StateObject private var viewModel: DeckDetailViewModel
-    @EnvironmentObject private var coordinator: AppCoordinator
     @State private var showAddFlashcard = false
 
     init(deckId: UUID) {
@@ -23,12 +22,14 @@ struct DeckDetailView: View {
         .navigationTitle(viewModel.deckName)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    showAddFlashcard = true
-                } label: {
-                    Image(systemName: "plus")
-                        .foregroundStyle(AppTheme.accent)
+            if !viewModel.isEmpty {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showAddFlashcard = true
+                    } label: {
+                        Image(systemName: "plus")
+                            .foregroundStyle(AppTheme.accent)
+                    }
                 }
             }
         }
@@ -49,7 +50,7 @@ struct DeckDetailView: View {
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundStyle(AppTheme.textPrimary)
 
-            Text("Adicione flashcards tocando no +")
+            Text("Adicione flashcards tocando no botão abaixo")
                 .font(.system(size: 15))
                 .foregroundStyle(AppTheme.textSecondary)
 
