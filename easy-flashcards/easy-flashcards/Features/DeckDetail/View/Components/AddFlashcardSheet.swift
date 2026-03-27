@@ -70,9 +70,14 @@ struct AddFlashcardSheet: View {
                 Spacer()
             }
             .padding(20)
-            .navigationTitle("Novo Flashcard")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Novo Flashcard")
+                        .font(.headline)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
+                }
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancelar") { dismiss() }
                         .foregroundStyle(.gray)
