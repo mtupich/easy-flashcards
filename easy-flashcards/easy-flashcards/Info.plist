@@ -13,9 +13,5 @@
 			</array>
 		</dict>
 	</array>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Easy Flashcards precisa acessar o microfone para o treino de pronúncia das palavras.</string>
-	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Easy Flashcards precisa do reconhecimento de fala para avaliar sua pronúncia durante o treino.</string>
 </dict>
 </plist>
