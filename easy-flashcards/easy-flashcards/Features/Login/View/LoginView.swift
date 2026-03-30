@@ -7,15 +7,20 @@ struct LoginView: View {
     @EnvironmentObject private var coordinator: AppCoordinator
 
     var body: some View {
-        VStack(spacing: 40) {
-            Spacer()
-            logoSection
-            authButtons
-            Spacer()
-            Spacer()
+        ScrollView {
+            VStack(spacing: 32) {
+                logoSection
+                emailAuthSection
+                divider
+                socialAuthButtons
+            }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 32)
         }
-        .padding(.horizontal, 32)
         .background(AppTheme.background.ignoresSafeArea())
+        .onChange(of: viewModel.password) { oldValue, newValue in
+            viewModel.applyStrongPasswordConfirmSyncIfNeeded(oldPassword: oldValue, newPassword: newValue)
+        }
         .alert("Erro", isPresented: $viewModel.showError) {
             Button("OK") {}
         } message: {
@@ -53,9 +58,135 @@ struct LoginView: View {
         }
     }
 
-    // MARK: - Auth Buttons
+    // MARK: - Email and Password
 
-    private var authButtons: some View {
+    private var emailAuthSection: some View {
+        VStack(spacing: 12) {
+            Text(modeTitle)
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundStyle(AppTheme.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            if viewModel.isRegisterMode {
+                nameField
+            }
+
+            emailField
+
+            if !viewModel.isResetPasswordMode {
+                passwordField
+
+                if viewModel.isRegisterMode {
+                    confirmPasswordField
+                }
+            }
+
+            primaryButton
+            secondaryButton
+
+            if !viewModel.isRegisterMode && !viewModel.isResetPasswordMode {
+                forgotPasswordButton
+            }
+        }
+    }
+
+    private var nameField: some View {
+        TextField("Nome do usuário", text: $viewModel.displayName)
+            .textInputAutocapitalization(.words)
+            .autocorrectionDisabled(true)
+            .textContentType(.nickname)
+            .submitLabel(.next)
+            .foregroundStyle(AppTheme.textPrimary)
+            .authInputStyle()
+    }
+
+    private var emailField: some View {
+        TextField("E-mail", text: $viewModel.email)
+            .keyboardType(.emailAddress)
+            .textInputAutocapitalization(.never)
+            .autocorrectionDisabled(true)
+            .textContentType(.emailAddress)
+            .submitLabel(.next)
+            .foregroundStyle(AppTheme.textPrimary)
+            .authInputStyle()
+    }
+
+    private var passwordField: some View {
+        Group {
+            if viewModel.isRegisterMode {
+                SecureTextField(placeholder: "Senha", text: $viewModel.password, allowsNewPasswordContentType: true)
+                    .frame(height: 22)
+            } else {
+                SecureField("Senha", text: $viewModel.password)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled(true)
+                    .textContentType(.password)
+                    .foregroundStyle(AppTheme.textPrimary)
+            }
+        }
+        .authInputStyle()
+    }
+
+    private var confirmPasswordField: some View {
+        SecureTextField(placeholder: "Confirmar senha", text: $viewModel.confirmPassword)
+            .frame(height: 22)
+            .authInputStyle()
+    }
+
+    private var primaryButton: some View {
+        Button {
+            viewModel.submitEmailAuth { coordinator.login() }
+        } label: {
+            Text(primaryActionTitle)
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(AppTheme.accentGradient)
+                .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusMedium))
+        }
+        .disabled(viewModel.isLoading)
+    }
+
+    private var secondaryButton: some View {
+        Button(toggleActionTitle) {
+            if viewModel.isResetPasswordMode {
+                viewModel.exitResetPasswordMode()
+            } else {
+                viewModel.toggleMode()
+            }
+        }
+        .font(.system(size: 14, weight: .medium))
+        .foregroundStyle(AppTheme.textSecondary)
+        .disabled(viewModel.isLoading)
+    }
+
+    private var forgotPasswordButton: some View {
+        Button("Esqueci minha senha") {
+            viewModel.enterResetPasswordMode()
+        }
+        .font(.system(size: 14, weight: .medium))
+        .foregroundStyle(AppTheme.accent)
+        .disabled(viewModel.isLoading)
+    }
+
+    // MARK: - Social Auth Buttons
+
+    private var divider: some View {
+        HStack(spacing: 10) {
+            Rectangle()
+                .fill(AppTheme.textSecondary.opacity(0.25))
+                .frame(height: 1)
+            Text("ou")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(AppTheme.textSecondary)
+            Rectangle()
+                .fill(AppTheme.textSecondary.opacity(0.25))
+                .frame(height: 1)
+        }
+    }
+
+    private var socialAuthButtons: some View {
         VStack(spacing: 14) {
             googleButton
             appleButton
@@ -98,6 +229,43 @@ struct LoginView: View {
         .frame(height: 54)
         .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusMedium))
         .disabled(viewModel.isLoading)
+    }
+
+    private var modeTitle: String {
+        if viewModel.isResetPasswordMode {
+            return "Recuperar senha"
+        }
+        return viewModel.isRegisterMode ? "Criar nova conta" : "Entrar"
+    }
+
+    private var primaryActionTitle: String {
+        if viewModel.isResetPasswordMode {
+            return "Enviar link de recuperação"
+        }
+        return viewModel.isRegisterMode ? "Cadastrar-se" : "Entrar com e-mail"
+    }
+
+    private var toggleActionTitle: String {
+        if viewModel.isResetPasswordMode {
+            return "Voltar para entrar"
+        }
+        return viewModel.isRegisterMode
+            ? "Já tem conta? Entrar"
+            : "Não tem conta? Cadastrar-se"
+    }
+}
+
+private extension View {
+    func authInputStyle() -> some View {
+        self
+            .padding(.horizontal, 14)
+            .padding(.vertical, 13)
+            .background(AppTheme.cardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusMedium))
+            .overlay(
+                RoundedRectangle(cornerRadius: AppTheme.cornerRadiusMedium)
+                    .stroke(AppTheme.textSecondary.opacity(0.25), lineWidth: 1)
+            )
     }
 }
 

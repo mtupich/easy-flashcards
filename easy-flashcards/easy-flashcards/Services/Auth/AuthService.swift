@@ -29,6 +29,9 @@ protocol AuthServiceProtocol: AnyObject {
     var isAuthenticated: Bool { get }
     var currentUserInfo: UserInfo? { get }
     @MainActor func signInWithGoogle() async throws
+    func signInWithEmail(email: String, password: String) async throws
+    func registerWithEmail(email: String, password: String, displayName: String) async throws
+    func sendPasswordReset(email: String) async throws
     func prepareAppleNonce() -> String
     func handleAppleSignIn(_ authorization: ASAuthorization) async throws
     func signOut() throws
@@ -80,6 +83,34 @@ final class AuthService: ObservableObject, AuthServiceProtocol {
 
         try await Auth.auth().signIn(with: credential)
         isAuthenticated = true
+    }
+
+    // MARK: - Email and Password
+
+    func signInWithEmail(email: String, password: String) async throws {
+        try await Auth.auth().signIn(withEmail: email, password: password)
+        await MainActor.run {
+            isAuthenticated = true
+        }
+    }
+
+    func registerWithEmail(email: String, password: String, displayName: String) async throws {
+        try await Auth.auth().createUser(withEmail: email, password: password)
+
+        if let user = Auth.auth().currentUser {
+            let changeRequest = user.createProfileChangeRequest()
+            changeRequest.displayName = displayName
+            try await changeRequest.commitChanges()
+            try await user.sendEmailVerification()
+        }
+
+        await MainActor.run {
+            isAuthenticated = true
+        }
+    }
+
+    func sendPasswordReset(email: String) async throws {
+        try await Auth.auth().sendPasswordReset(withEmail: email)
     }
 
     // MARK: - Apple Sign-In
