@@ -1,13 +1,17 @@
+import PhotosUI
 import SwiftUI
 
 struct ProfileSheet: View {
 
     let userInfo: UserInfo?
+    let localPhoto: UIImage?
     let onDismiss: () -> Void
     let onLogout: () -> Void
     let onDeleteAccount: () -> Void
+    let onPhotoChanged: (UIImage) -> Void
 
     @State private var showDeleteConfirm = false
+    @State private var selectedItem: PhotosPickerItem?
 
     private var displayName: String { userInfo?.displayName ?? "Usuário" }
     private var email: String { userInfo?.email ?? "" }
@@ -36,6 +40,17 @@ struct ProfileSheet: View {
         } message: {
             Text("Esta ação é irreversível. Todos os seus dados serão perdidos.")
         }
+        .onChange(of: selectedItem) { newItem in
+            guard let newItem else { return }
+            Task {
+                if let data = try? await newItem.loadTransferable(type: Data.self),
+                   let image = UIImage(data: data) {
+                    await MainActor.run {
+                        onPhotoChanged(image)
+                    }
+                }
+            }
+        }
     }
 
     private var sheetIndicator: some View {
@@ -48,18 +63,14 @@ struct ProfileSheet: View {
 
     private var profileHeader: some View {
         HStack(spacing: 14) {
-            if let photoURL {
-                AsyncImage(url: photoURL) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                } placeholder: {
-                    initialsCircle
-                }
-                .frame(width: 52, height: 52)
-                .clipShape(Circle())
-            } else {
-                initialsCircle
+            PhotosPicker(selection: $selectedItem, matching: .images) {
+                profileImage
+                    .overlay(alignment: .bottomTrailing) {
+                        Image(systemName: "camera.circle.fill")
+                            .font(.system(size: 20))
+                            .foregroundStyle(AppTheme.accent)
+                            .background(Circle().fill(.white).padding(2))
+                    }
             }
 
             VStack(alignment: .leading, spacing: 3) {
@@ -86,6 +97,29 @@ struct ProfileSheet: View {
         }
         .padding(.horizontal, 20)
         .padding(.bottom, 20)
+    }
+
+    @ViewBuilder
+    private var profileImage: some View {
+        if let localPhoto {
+            Image(uiImage: localPhoto)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 52, height: 52)
+                .clipShape(Circle())
+        } else if let photoURL {
+            AsyncImage(url: photoURL) { image in
+                image
+                    .resizable()
+                    .scaledToFill()
+            } placeholder: {
+                initialsCircle
+            }
+            .frame(width: 52, height: 52)
+            .clipShape(Circle())
+        } else {
+            initialsCircle
+        }
     }
 
     private var initialsCircle: some View {

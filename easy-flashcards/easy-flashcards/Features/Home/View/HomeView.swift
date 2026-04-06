@@ -7,6 +7,7 @@ struct HomeView: View {
     @State private var showCreateDeck = false
     @State private var showProfile = false
     @State private var deckToDelete: Deck?
+    @State private var localPhoto: UIImage? = ProfilePhotoService.shared.load()
 
     var body: some View {
         ScrollView {
@@ -38,6 +39,7 @@ struct HomeView: View {
         .floatingSheet(isPresented: $showProfile) {
             ProfileSheet(
                 userInfo: coordinator.currentUserInfo,
+                localPhoto: localPhoto,
                 onDismiss: { showProfile = false },
                 onLogout: {
                     showProfile = false
@@ -50,6 +52,10 @@ struct HomeView: View {
                     Task {
                         await coordinator.deleteAccount()
                     }
+                },
+                onPhotoChanged: { image in
+                    ProfilePhotoService.shared.save(image)
+                    localPhoto = image
                 }
             )
         }
@@ -83,7 +89,13 @@ struct HomeView: View {
             Button {
                 showProfile = true
             } label: {
-                if let photoURL = coordinator.currentUserInfo?.photoURL {
+                if let localPhoto {
+                    Image(uiImage: localPhoto)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 46, height: 46)
+                        .clipShape(Circle())
+                } else if let photoURL = coordinator.currentUserInfo?.photoURL {
                     AsyncImage(url: photoURL) { image in
                         image
                             .resizable()
